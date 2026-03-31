@@ -17,7 +17,9 @@ const webhook = new WebhookClient({ url: webhookUrl });
 client.on('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const commands = [
-    new SlashCommandBuilder().setName('store').setDescription('Show the Coral SMP webstore').toJSON()
+    new SlashCommandBuilder().setName('store').setDescription('Show the Coral SMP webstore').toJSON(),
+    new SlashCommandBuilder().setName('ip').setDescription('Show the Coral SMP server IP').toJSON(),
+    new SlashCommandBuilder().setName('help').setDescription('Get help and support').toJSON()
   ];
   const rest = new REST({ version: '10' }).setToken(token);
   for (const guild of client.guilds.cache.values()) {
@@ -45,19 +47,31 @@ client.on('guildMemberAdd', async (member) => {
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
+
   if (interaction.commandName === 'store') {
     try {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setLabel('Click For Webstore').setURL('https://coralsmp.tebex.io').setStyle(ButtonStyle.Link)
       );
       await interaction.reply({
-        embeds: [{
-          title: '🛒 SERVER WEBSTORE',
-          description: 'Support the server by visiting our store!\nPick up ranks, cosmetics, and more to help keep Coral SMP running strong.',
-          color: 5814783,
-          image: { url: LOGO_URL }
-        }],
+        embeds: [{ title: '🛒 SERVER WEBSTORE', description: 'Support the server by visiting our store!\nPick up ranks, cosmetics, and more to help keep Coral SMP running strong.', color: 5814783, image: { url: LOGO_URL } }],
         components: [row]
+      });
+    } catch (err) { console.error('Failed:', err); }
+  }
+
+  if (interaction.commandName === 'ip') {
+    try {
+      await interaction.reply({
+        embeds: [{ title: '🌐 Server IP', description: '**IP** - coralsmp.net\n**PORT** - 19132', color: 5814783 }]
+      });
+    } catch (err) { console.error('Failed:', err); }
+  }
+
+  if (interaction.commandName === 'help') {
+    try {
+      await interaction.reply({
+        embeds: [{ title: '❓ Need Help?', description: 'If you need help with anything please open a ticket!', color: 5814783 }]
       });
     } catch (err) { console.error('Failed:', err); }
   }

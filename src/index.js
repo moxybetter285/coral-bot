@@ -63,7 +63,7 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.commandName === 'ip') {
     try {
       await interaction.reply({
-        embeds: [{ title: '🌐 Server IP', description: '**IP** - coralsmp.net\n**PORT** - 19132', color: 5814783 }]
+        embeds: [{ title: '🌐 Server IP', description: '**IP** - coralsmp.net\n**PORT** - 30110', color: 5814783 }]
       });
     } catch (err) { console.error('Failed:', err); }
   }

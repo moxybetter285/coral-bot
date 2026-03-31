@@ -20,8 +20,10 @@ client.on('clientReady', async () => {
     new SlashCommandBuilder().setName('store').setDescription('Show the Coral SMP webstore').toJSON()
   ];
   const rest = new REST({ version: '10' }).setToken(token);
-  await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-  console.log('Slash commands registered.');
+  for (const guild of client.guilds.cache.values()) {
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: commands });
+    console.log(`Slash commands registered in guild: ${guild.name}`);
+  }
 });
 
 process.on('unhandledRejection', (err) => { console.error('Unhandled error:', err); });

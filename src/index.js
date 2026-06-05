@@ -11,6 +11,7 @@ const {
   PermissionFlagsBits
 } = require('discord.js');
 
+// Fixed local file reference to ensure Node finds it inside /src
 const {
   sendTicketPanel,
   handleTicketTypeSelect,
@@ -19,7 +20,7 @@ const {
   closeTicket,
   loadData,
   saveData
-} = require('../tickets');
+} = require('./tickets.js');
 
 const token = process.env.DISCORD_BOT_TOKEN;
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -180,10 +181,7 @@ client.on('guildMemberAdd', async member => {
 
 client.on('interactionCreate', async interaction => {
   try {
-
-    // ── Slash commands ──────────────────────────────────────────
     if (interaction.isChatInputCommand()) {
-
       if (interaction.commandName === 'store') {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder().setLabel('Click For Webstore').setURL('https://coralsmp.tebex.io').setStyle(ButtonStyle.Link)
@@ -250,7 +248,6 @@ client.on('interactionCreate', async interaction => {
           AttachFiles: true
         });
 
-        // Deny send messages for any extra added users (only claimer + opener can type)
         for (const userId of (ticket.addedUsers || [])) {
           if (userId !== interaction.user.id && userId !== ticket.userId) {
             await interaction.channel.permissionOverwrites.edit(userId, { SendMessages: false });
@@ -300,9 +297,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
         const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-
         const lines = sorted.map(([userId, count], i) =>
           `${medals[i]} <@${userId}> — **${count}** ticket${count === 1 ? '' : 's'} done`
         );
@@ -415,7 +410,6 @@ client.on('interactionCreate', async interaction => {
           fetchReply: true
         });
 
-        // Update the button with the real message ID
         await msg.edit({
           components: [new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -440,14 +434,12 @@ client.on('interactionCreate', async interaction => {
       }
     }
 
-    // ── Select menu ─────────────────────────────────────────────
     if (interaction.isStringSelectMenu()) {
       if (interaction.customId === 'ticket_type_select') {
         await handleTicketTypeSelect(interaction);
       }
     }
 
-    // ── Modals ───────────────────────────────────────────────────
     if (interaction.isModalSubmit()) {
       if (interaction.customId.startsWith('ticket_modal_')) {
         await handleTicketModalSubmit(interaction);
@@ -458,7 +450,6 @@ client.on('interactionCreate', async interaction => {
       }
     }
 
-    // ── Buttons ──────────────────────────────────────────────────
     if (interaction.isButton()) {
       if (interaction.customId === 'close_ticket') {
         await closeTicket(interaction);
@@ -474,7 +465,6 @@ client.on('interactionCreate', async interaction => {
         if (interaction.user.id !== ticket.userId) {
           return interaction.reply({ content: '❌ Only the ticket opener can accept this.', ephemeral: true });
         }
-        // Credit the person who did /closereq, not the one clicking Accept
         await closeTicket(interaction, null, ticket.closeReqBy || interaction.user.id);
       }
 
@@ -490,4 +480,15 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({
           embeds: [{
             title: '❌ Close Request Denied',
-            description: `<@${interaction.
+            description: `<@${interaction.user.id}> has denied the close request. The ticket will remain open.`,
+            color: 0xFF4444
+          }]
+        });
+      }
+
+      if (interaction.customId.startsWith('enter_giveaway_')) {
+        const messageId = interaction.customId.replace('enter_giveaway_', '');
+        const gw = giveaways[messageId];
+
+        if (!gw || gw.ended) {
+          return interaction.reply({ content: '❌ This giveaway has already ende

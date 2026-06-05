@@ -19,7 +19,7 @@ const {
   closeTicket,
   loadData,
   saveData
-} = require('./tickets');
+} = require('../tickets');
 
 const token = process.env.DISCORD_BOT_TOKEN;
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL;

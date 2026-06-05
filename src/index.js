@@ -542,3 +542,7 @@ http.createServer((req, res) => {
 }).listen(PORT, () => {
   console.log(`Keep-alive server listening on port ${PORT}`);
 });
+
+
+const keepAlive = require('./server.js');
+keepAlive();

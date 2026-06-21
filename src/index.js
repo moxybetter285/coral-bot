@@ -1,3 +1,5 @@
+const keepAlive = require('./server.js');
+
 const {
   Client,
   GatewayIntentBits,
@@ -491,7 +493,4 @@ client.on('interactionCreate', async interaction => {
         if (interaction.user.id !== ticket.userId) {
           return interaction.reply({ content: '❌ Only the ticket opener can accept this.', ephemeral: true });
         }
-        await closeTicket(interaction, null, ticket.closeReqBy || interaction.user.id);
-      }
-
-      if (interaction.cus
+        await closeTicket(interaction, null, ticket.closeReqBy || interaction.u

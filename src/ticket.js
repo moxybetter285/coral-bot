@@ -12,7 +12,6 @@ const {
 const fs = require('fs');
 const path = require('path');
 
-// Safe auto-creation of data directory and tickets file
 const DATA_DIR = path.join(__dirname, '../data');
 const DATA_FILE = path.join(DATA_DIR, 'tickets.json');
 
@@ -35,7 +34,6 @@ const TICKET_TYPES = [
   { value: 'media_application', label: 'Media Application', description: 'Apply for the Media rank on Coral SMP.', emoji: '🎬' },
 ];
 
-// In-memory store — always works even if file system fails
 let memoryData = { config: {}, tickets: {} };
 
 function loadData() {
@@ -90,7 +88,6 @@ async function handleTicketTypeSelect(interaction) {
   const typeValue = interaction.values[0];
   const selectedType = TICKET_TYPES.find(t => t.value === typeValue);
 
-  // Reset the select menu option back to placeholder state
   await interaction.update({});
 
   if (!selectedType) return;
@@ -121,7 +118,6 @@ async function handleTicketModalSubmit(interaction) {
   const ticketCount = Object.keys(data.tickets).length + 1;
   const channelName = `${selectedType.label.toLowerCase().replace(/\s+/g, '-')}-${ticketCount}`;
 
-  // Build base channel permission rewrites (Opener + Everyone)
   const permissionOverwrites = [
     { id: interaction.guild.roles.everyone.id, deny: [PermissionFlagsBits.ViewChannel] },
     {
@@ -135,7 +131,6 @@ async function handleTicketModalSubmit(interaction) {
     }
   ];
 
-  // Auto-include staff role if mapped in configurations
   if (data.config && data.config.staffRoleId) {
     permissionOverwrites.push({
       id: data.config.staffRoleId,
@@ -148,11 +143,17 @@ async function handleTicketModalSubmit(interaction) {
     });
   }
 
-  const channel = await interaction.guild.channels.create({
+  const channelOptions = {
     name: channelName,
     type: ChannelType.GuildText,
     permissionOverwrites
-  });
+  };
+
+  if (data.config && data.config.ticketCategoryId) {
+    channelOptions.parent = data.config.ticketCategoryId;
+  }
+
+  const channel = await interaction.guild.channels.create(channelOptions);
 
   data.tickets[channel.id] = {
     channelId: channel.id,

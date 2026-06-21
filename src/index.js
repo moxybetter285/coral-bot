@@ -11,7 +11,6 @@ const {
   PermissionFlagsBits
 } = require('discord.js');
 
-// Fixed local file reference to ensure Node finds it inside /src
 const {
   sendTicketPanel,
   handleTicketTypeSelect,
@@ -25,8 +24,7 @@ const {
 const token = process.env.DISCORD_BOT_TOKEN;
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
-// ── Giveaway storage ─────────────────────────────────────────
-const giveaways = {}; // messageId -> giveaway data
+const giveaways = {};
 
 function parseDuration(str) {
   const match = str.trim().match(/^(\d+)(s|m|h|d)$/i);
@@ -85,9 +83,7 @@ async function endGiveaway(messageId, channelId, guildId) {
     });
 
     if (entries.length > 0) {
-      await channel.send({
-        content: `🎉 Congratulations ${pingText}! You won **${gw.prize}**!`
-      });
+      await channel.send({ content: `🎉 Congratulations ${pingText}! You won **${gw.prize}**!` });
     } else {
       await channel.send({ content: '😔 The giveaway ended with no entries.' });
     }
@@ -151,6 +147,16 @@ client.on('clientReady', async () => {
     new SlashCommandBuilder()
       .setName('tickets')
       .setDescription('View all open tickets')
+      .toJSON(),
+    new SlashCommandBuilder()
+      .setName('setcategory')
+      .setDescription('Set the category where new ticket channels will be created')
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+      .addChannelOption(opt =>
+        opt.setName('category')
+          .setDescription('The category to place tickets in')
+          .setRequired(true)
+      )
       .toJSON(),
   ];
 
@@ -341,6 +347,26 @@ client.on('interactionCreate', async interaction => {
         });
       }
 
+      if (interaction.commandName === 'setcategory') {
+        const { ChannelType } = require('discord.js');
+        const category = interaction.options.getChannel('category');
+        if (category.type !== ChannelType.GuildCategory) {
+          return interaction.reply({ content: '❌ Please select a **category**, not a regular channel.', ephemeral: true });
+        }
+        const data = loadData();
+        if (!data.config) data.config = {};
+        data.config.ticketCategoryId = category.id;
+        saveData(data);
+        await interaction.reply({
+          embeds: [{
+            title: '✅ Ticket Category Set',
+            description: `New ticket channels will now be created inside **${category.name}**.`,
+            color: 0x57F287
+          }],
+          ephemeral: true
+        });
+      }
+
       if (interaction.commandName === 'tickets') {
         const data = loadData();
         const open = Object.values(data.tickets).filter(t => t.status === 'open' && t.guildId === interaction.guild.id);
@@ -388,7 +414,7 @@ client.on('interactionCreate', async interaction => {
         const enterBtn = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('enter_giveaway_PLACEHOLDER')
-            .setLabel(`🎉 Enter Giveaway`)
+            .setLabel('🎉 Enter Giveaway')
             .setStyle(ButtonStyle.Primary)
         );
 
@@ -468,27 +494,4 @@ client.on('interactionCreate', async interaction => {
         await closeTicket(interaction, null, ticket.closeReqBy || interaction.user.id);
       }
 
-      if (interaction.customId === 'deny_close_req') {
-        const data = loadData();
-        const ticket = data.tickets[interaction.channel.id];
-        if (!ticket) return interaction.reply({ content: '❌ Not a ticket channel.', ephemeral: true });
-        if (interaction.user.id !== ticket.userId) {
-          return interaction.reply({ content: '❌ Only the ticket opener can deny this.', ephemeral: true });
-        }
-        ticket.closeReqBy = null;
-        saveData(data);
-        await interaction.reply({
-          embeds: [{
-            title: '❌ Close Request Denied',
-            description: `<@${interaction.user.id}> has denied the close request. The ticket will remain open.`,
-            color: 0xFF4444
-          }]
-        });
-      }
-
-      if (interaction.customId.startsWith('enter_giveaway_')) {
-        const messageId = interaction.customId.replace('enter_giveaway_', '');
-        const gw = giveaways[messageId];
-
-        if (!gw || gw.ended) {
-          return interaction.reply({ content: '❌ This giveaway has already ende
+      if (interaction.cus

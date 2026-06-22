@@ -107,7 +107,6 @@ restCheck.get('/users/@me').then(data => {
   console.log(`[TOKEN OK] Bot identity confirmed: ${data.username}`);
 }).catch(err => {
   console.error('[TOKEN INVALID] Discord rejected the token:', err.message);
-  process.exit(1);
 });
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]

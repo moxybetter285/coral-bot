@@ -109,7 +109,6 @@ restCheck.get('/users/@me').then(data => {
   console.error('[TOKEN INVALID] Discord rejected the token:', err.message);
   process.exit(1);
 });
-
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });

@@ -32,6 +32,8 @@ const TICKET_TYPES = [
   { value: 'punishment_appeal', label: 'Punishment Appeal', description: 'Open this ticket to appeal a punishment.', emoji: '🎁' },
   { value: 'staff_report', label: 'Staff Report', description: 'Report a staff member — false reports have consequences.', emoji: '🔧' },
   { value: 'media_application', label: 'Media Application', description: 'Apply for the Media rank on Coral SMP.', emoji: '🎬' },
+  { value: 'partnership', label: 'Partnership', description: 'Partnership with us !', emoji: '💼' },
+  { value: 'partnership_manager_application', label: 'Partnership Manager Application', description: 'Apply to be the CoralSmp Partnership manager', emoji: '📕' },
 ];
 
 let memoryData = { config: {}, tickets: {} };
